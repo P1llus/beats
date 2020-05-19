@@ -24,7 +24,6 @@ import (
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/azure/monitor"
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/azure/storage"
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/cisco"
-	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/cisco/system"
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/cisco/uptime"
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/cloudfoundry"
 	_ "github.com/elastic/beats/v7/x-pack/metricbeat/module/cloudfoundry/container"

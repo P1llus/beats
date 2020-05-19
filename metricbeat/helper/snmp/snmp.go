@@ -11,7 +11,7 @@ import (
 
 // SNMP type represents a full SNMP agent
 type SNMP struct {
-    client    *g.GoSNMP
+    Client    *g.GoSNMP
     results   []string
 }
 
@@ -28,8 +28,8 @@ func NewSNMP(base mb.BaseMetricSet) (*SNMP, error) {
     }
 
     return &SNMP{
-        client: &g.GoSNMP{
-            Target: config.Host,
+        Client: &g.GoSNMP{
+            Target: "127.0.0.1",
             Port: uint16(config.Port),
             Community: config.Community,
             Version: ver,
@@ -41,56 +41,56 @@ func NewSNMP(base mb.BaseMetricSet) (*SNMP, error) {
 }
 
 func (s *SNMP) Get(oidslice []string) (*g.SnmpPacket, error) {
-    err := s.client.Connect()
-    result, err := s.client.Get(oidslice)
+    err := s.Client.Connect()
+    result, err := s.Client.Get(oidslice)
     if err != nil {
         log.Fatalf("Error while executing SNMP Get: %v", err)
     }
-    defer s.client.Conn.Close()
+    defer s.Client.Conn.Close()
     
     return result, nil
 }
 
 func (s *SNMP) Walk(oid string) error{
-    err := s.client.Connect()
+    err := s.Client.Connect()
     if err != nil {
         log.Fatalf("Error while connecting to SNMP port: %v", err)
     }
 
-    err = s.client.Walk(oid, s.walkf)
+    err = s.Client.Walk(oid, s.walkf)
     if err != nil {
         log.Fatalf("Error while executing SNMP Walk: %v", err)
     }
 
-    defer s.client.Conn.Close()
+    defer s.Client.Conn.Close()
 
     return err
 }
 
 func (s *SNMP) BulkWalk(oid string) error {
-    err := s.client.Connect()
+    err := s.Client.Connect()
     if err != nil {
         log.Fatalf("Error while connecting to SNMP port: %v", err)
     }
 
-    err = s.client.BulkWalk(oid, s.walkf)
+    err = s.Client.BulkWalk(oid, s.walkf)
     if err != nil {
         log.Fatalf("Error while executing SNMP Walk: %v", err)
     }
 
-    defer s.client.Conn.Close()
+    defer s.Client.Conn.Close()
 
     return err
 }
 
 func (s *SNMP) BulkWalkAll(oid string) (map[string][]g.SnmpPDU, error) {
     var results []g.SnmpPDU
-    err := s.client.Connect()
+    err := s.Client.Connect()
     if err != nil {
         log.Fatalf("Error while connecting to SNMP port: %v", err)
     }
 
-    results, err = s.client.BulkWalkAll(oid)
+    results, err = s.Client.BulkWalkAll(oid)
     if err != nil {
         log.Fatalf("Error while executing SNMP Walk: %v", err)
     }
@@ -100,7 +100,7 @@ func (s *SNMP) BulkWalkAll(oid string) (map[string][]g.SnmpPDU, error) {
         resultsArray[entry.Name[len(entry.Name)-1:]] = append(resultsArray[entry.Name[len(entry.Name)-1:]], entry)
     }
 
-    defer s.client.Conn.Close()
+    defer s.Client.Conn.Close()
 
     return resultsArray, err
 }

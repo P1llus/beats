@@ -5,6 +5,7 @@ import (
 
 	"github.com/elastic/beats/v7/libbeat/common"
 	"github.com/elastic/beats/v7/metricbeat/mb"
+	"github.com/elastic/beats/v7/libbeat/logp"
 	"github.com/elastic/beats/v7/metricbeat/helper/snmp"
 )
 
@@ -22,20 +23,25 @@ func init() {
 // interface methods except for Fetch.
 type MetricSet struct {
 	mb.BaseMetricSet
-	snmp 	 *snmp.SNMP
+	log  *logp.Logger
+	snmp *snmp.SNMP
 }
 
 // New creates a new instance of the MetricSet. New is responsible for unpacking
 // any MetricSet specific configuration options if there are any.
 func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	snmp, err := snmp.NewSNMP(base)
+	
 	if err != nil {
 		return nil, err
 	}
 
+	log := logp.NewLogger("cisco")
+
 	return &MetricSet{
 		BaseMetricSet: base,
 		snmp: snmp,
+		log: log,
 	}, nil
 }
 
@@ -61,6 +67,7 @@ func (m *MetricSet) Fetch(reporter mb.ReporterV2) error {
 
 func (m *MetricSet) getUptime() (uint64, error) {
 	var sec uint64
+	m.snmp.Client.Target = m.Host()
 	content, err := m.snmp.Get([]string{"1.3.6.1.2.1.1.3.0"})
 	if err != nil {
 		return 0, errors.Wrap(err, "error in SNMP request")

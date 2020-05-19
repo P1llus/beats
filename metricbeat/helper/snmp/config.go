@@ -6,7 +6,7 @@ import (
 
 // Config for an HTTP helper
 type Config struct {
-    Host      string             `config:"host"`
+    Hosts     []string           `config:"hosts"`
     Port      int                `config:"port"`
     Community string             `config:"community"`
     Timeout   time.Duration      `config:"timeout"`
@@ -16,7 +16,7 @@ type Config struct {
 
 func defaultConfig() Config {
     return Config{
-        Host: "localhost",
+        Hosts: []string{"127.0.0.1"},
         Port: 161,
         Community: "public",
         Version: "v2c",
