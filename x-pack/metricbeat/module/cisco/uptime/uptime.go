@@ -23,8 +23,6 @@ func init() {
 type MetricSet struct {
 	mb.BaseMetricSet
 	snmp 	 *snmp.SNMP
-	oidslice []string
-	oid 	 string
 }
 
 // New creates a new instance of the MetricSet. New is responsible for unpacking
@@ -38,7 +36,6 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	return &MetricSet{
 		BaseMetricSet: base,
 		snmp: snmp,
-		oidslice: []string{"1.3.6.1.2.1.1.3.0"},
 	}, nil
 }
 
@@ -64,7 +61,7 @@ func (m *MetricSet) Fetch(reporter mb.ReporterV2) error {
 
 func (m *MetricSet) getUptime() (uint64, error) {
 	var sec uint64
-	content, err := m.snmp.Get(m.oidslice)
+	content, err := m.snmp.Get([]string{"1.3.6.1.2.1.1.3.0"})
 	if err != nil {
 		return 0, errors.Wrap(err, "error in SNMP request")
 	}
