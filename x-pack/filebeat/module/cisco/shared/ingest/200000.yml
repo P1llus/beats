@@ -1,0 +1,66 @@
+---
+description: "Pipeline for Cisco {< .internal_PREFIX >} 2xxxxx logs"
+processors:
+  #
+  # Set ECS Parameters for 2xxxxx logs
+  #
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('220')"
+      field: event.action
+      value: bridge-firewall
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('208')"
+      field: event.action
+      value: cli-activity
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('201')"
+      field: event.action
+      value: session-info
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('212')"
+      field: event.action
+      value: snmp-activity
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('209')"
+      field: event.action
+      value: ip-stack
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('210')"
+      field: event.action
+      value: ha-failover
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('213')"
+      field: event.action
+      value: vpn-pptp
+
+  #
+  # Handle 2xxxxx messages
+  #
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '201005'"
+      field: "message"
+      pattern: "FTP data connection failed for IP_address %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '201006'"
+      field: "message"
+      pattern: "RCMD backconnection failed for %{source.address}/%{source.port}."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '201009'"
+      field: "message"
+      pattern: "TCP connection limit of number for host %{source.address} on %{_temp_.cisco.source_interface} exceeded"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '209003'"
+      field: "message"
+      pattern: "Fragment database limit of number exceeded: src = %{source.address}, dest = %{destination.address}, proto = %{network.transport}, id = %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '209004'"
+      field: "message"
+      pattern: "Invalid IP fragment, size = %{source.bytes} exceeds maximum size = %{_temp_.cisco.max_bytes} : src = %{source.address}, dest = %{destination.address}, proto = %{network.transport}, id = %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '212005'"
+      field: "message"
+      pattern: "incoming SNMP request (%{source.bytes} bytes) on interface %{_temp_.cisco.source_interface} exceeds data buffer size, discarding this SNMP request."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '212006'"
+      field: "message"
+      pattern: "Dropping SNMP request from %{source.address}/%{source.port} to %{_temp_.cisco.source_interface}:%{destination.adress}/%{destination.port} because: %{_temp_.cisco.reason}"

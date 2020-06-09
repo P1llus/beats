@@ -25,7 +25,12 @@ var:
   - name: internal_PREFIX
     default: ASA
 
-ingest_pipeline: ../shared/ingest/asa-ftd-pipeline.yml
+ingest_pipeline:
+  - "../shared/ingest/asa-ftd-pipeline.yml"
+  - "../shared/ingest/100000.yml"
+  - "../shared/ingest/300000.yml"
+  - "../shared/ingest/430000ftd.yml"
+
 input: config/input.yml
 
 requires.processors:

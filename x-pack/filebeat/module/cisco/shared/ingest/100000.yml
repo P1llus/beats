@@ -1,0 +1,325 @@
+---
+description: "Pipeline for Cisco {< .internal_PREFIX >} 1xxxxx logs"
+processors:
+  #
+  # Set ECS Parameters for 2xxxxx logs
+  #
+  
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('111')"
+      field: event.action
+      value: command-line-action
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('106')"
+      field: event.action
+      value: firewall-rule
+  - set:
+      if: "ctx._temp_.cisco.message_id.startsWith('109') || ctx._temp_.cisco.message_id.startsWith('113')"
+      field: event.action
+      value: user-auth
+  #
+  # Handle 1xxxxx messages
+  #
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106001'"
+      field: "message"
+      pattern: "%{network.direction} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106002'"
+      field: "message"
+      pattern: "%{network.transport} Connection %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106006'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106007'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106010'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.direction} %{network.transport} src %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} %{} dst %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106012'"
+      field: "message"
+      pattern: "%{event.outcome} IP from %{source.address} to %{destination.address} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106013'"
+      field: "message"
+      pattern: "Dropping echo request from %{source.address} to PAT address %{destination.address}"
+  - set:
+      if: "ctx._temp_.cisco.message_id == '106013'"
+      field: "network.transport"
+      value: icmp
+  - set:
+      if: "ctx._temp_.cisco.message_id == '106013'"
+      field: "network.direction"
+      value: inbound
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106014'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.direction} %{network.transport} src %{_temp_.cisco.source_interface}:%{source.address} %{}dst %{_temp_.cisco.destination_interface}:%{destination.address} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106015'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.transport} (no connection) from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106016'"
+      field: "message"
+      pattern: "%{event.outcome} IP spoof from (%{source.address}) to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106017'"
+      field: "message"
+      pattern: "%{event.outcome} IP due to Land Attack from %{source.address} to %{destination.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106018'"
+      field: "message"
+      pattern: "%{network.transport} packet type %{_temp_.cisco.icmp_type} %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106020'"
+      field: "message"
+      pattern: "%{event.outcome} IP teardrop fragment (size = %{}, offset = %{}) from %{source.address} to %{destination.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106021'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.transport} reverse path check from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106022'"
+      field: "message"
+      pattern: "%{event.outcome} %{network.transport} connection spoof from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '106023'"
+      field: "message"
+      patterns:
+      - ^%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{POSINT:source.port})?\s*(%{GREEDYDATA:_temp_.cisco.source_username} )?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{POSINT:destination.port})?%{DATA}by access.group "%{NOTSPACE:_temp_.cisco.list_id}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106025' || ctx._temp_.cisco.message_id == '106026'"
+      field: "message"
+      pattern: "%Failed to determine the security context for the packet: %{network.vlan.name}:%{source.address} %{destination.address} %{source.port} %{destination.port} %{network.transport}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106027'"
+      field: "message"
+      pattern: '%{} %{event.outcome} src %{source.address} dst %{destination.address} by access-group "%{_temp_.cisco.list_id}"'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106100'"
+      field: "message"
+      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port}) -> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port}) %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106102'"
+      field: "message"
+      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{_temp_.cisco.srcusername} %{_temp_.cisco.source_interface}/%{source.address} %{source.port} %{_temp_.cisco.destination_interface}/%{destination.address} %{destination.port} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106103'"
+      field: "message"
+      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{_temp_.cisco.srcusername} %{_temp_.cisco.source_interface}/%{source.address} %{source.port} %{_temp_.cisco.destination_interface}/%{destination.address} %{destination.port} %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109001'"
+      field: "message"
+      pattern: "Auth start for user %{source.user.name} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109002'"
+      field: "message"
+      pattern: "Auth from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} failed (server IP_address failed) on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109003'"
+      field: "message"
+      pattern: "Auth from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} failed (all servers failed) on interface %{_temp_.cisco.source_interface}, so marking all servers ACTIVE again."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109005'"
+      field: "message"
+      pattern: "Authentication succeeded for user %{_temp_.cisco.srcusername} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109007'"
+      field: "message"
+      pattern: "Authorization permitted for user %{_temp_.cisco.srcusername} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109008'"
+      field: "message"
+      pattern: "Authorization denied for user %{_temp_.cisco.srcusername} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109010'"
+      field: "message"
+      pattern: "Auth from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} failed (too many pending auths) on interface %{_temp_.cisco.source_interface}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109011'"
+      field: "message"
+      pattern: "Authen Session Start: user '%{_temp_.cisco.srcusername}', sid %{_temp_.cisco.srcuserid}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109012'"
+      field: "message"
+      pattern: "Authen Session End: user '%{_temp_.cisco.srcusername}', sid %{_temp_.cisco.srcuserid}, elapsed %{} seconds"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109016'"
+      field: "message"
+      pattern: "Can't find authorization ACL %{} for user '%{_temp_.cisco.srcusername}'"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109017'"
+      field: "message"
+      pattern: "User at %{source.address} exceeded auth proxy connection limit (max)"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109023'"
+      field: "message"
+      pattern: "User from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.destination_interface} must authenticate before using this service."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109024'"
+      field: "message"
+      pattern: "Authorization denied from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} (not authenticated) on interface %{_temp_.cisco.source_interface} using %{network.transport}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109025'"
+      field: "message"
+      pattern: "Authorization denied (acl=%{}) for user '%{_temp_.cisco.srcusername}' from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface} using %{network.transport}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109028'"
+      field: "message"
+      pattern: "aaa bypassed for same-security traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109031'"
+      field: "message"
+      pattern: "NT Domain Authentication Failed: rejecting guest login for %{_temp_.cisco.srcusername}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109033'"
+      field: "message"
+      pattern: "Authentication failed for admin user %{_temp_.cisco.srcusername} from %{source.address}. Interactive challenge processing is not supported for %{network.transport} connections"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109034'"
+      field: "message"
+      pattern: "Authentication failed for network user %{_temp_.cisco.srcusername} from %{source.address}/port %{source.port} to %{destination.address}/%{destination.port}. Interactive challenge processing is not supported for %{network.transport} connections"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '109040'"
+      field: "message"
+      pattern: "User at %{source.address} exceeded auth proxy rate limit of 10 connections/sec"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111001'"
+      field: "message"
+      pattern: "Begin configuration: %{source.address} writing to device"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111002'"
+      field: "message"
+      pattern: "Begin configuration: %{source.address} reading from device"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111003'"
+      field: "message"
+      pattern: "%{source.address} Erase configuration"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111004' || ctx._temp_.cisco.message_id == '111005'"
+      field: "message"
+      pattern: "%{source.address} end configuration: %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111007'"
+      field: "message"
+      pattern: "Begin configuration: %{source.address} reading from device."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111008'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.srcusername} executed the %{} command"
+      ignore_failure: true
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111008'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.srcusername} executed the command %{}"
+      ignore_failure: true
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111009'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.srcusername} executed cmd:%{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '111010'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.srcusername}, running %{} from IP %{source.address}, executed %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113003'"
+      field: "message"
+      pattern: "AAA group policy for user %{source.user.name} is being set to %{source.group.name}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113004'"
+      field: "message"
+      pattern: "AAA user %{} Successful: server = %{destination.address}, User = %{_temp_.cisco.hstusername}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113005'"
+      field: "message"
+      pattern: "AAA user authentication Rejected%{} reason = AAA failure%{} server = %{destination.address} : user = %{_temp_.cisco.hstusername}%{} user IP = %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113006'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.hstusername} locked out on exceeding number successive failed authentication attempts"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113007'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.hstusername} unlocked by administrator"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113008'"
+      field: "message"
+      pattern: "User %{_temp_.cisco.hstusername} unlocked by administrator"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113012'"
+      field: "message"
+      pattern: "AAA user authentication Successful: local database: user = %{_temp_.cisco.hstusername}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113015'"
+      field: "message"
+      pattern: "AAA user authentication Rejected: reason = %{} : local database: user = %{_temp_.cisco.hstusername}: user IP = %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113016'"
+      field: "message"
+      pattern: "AAA credentials rejected: reason = %{} : server = %{_temp_.cisco.hstaddress} : user = %{_temp_.cisco.hstusername} : user IP = %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113017'"
+      field: "message"
+      pattern: "AAA credentials rejected: reason = %{} : local database: user = %{_temp_.cisco.hstusername}: user IP = %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113021'"
+      field: "message"
+      pattern: "Attempted console login failed. User %{_temp_.cisco.hstusername} did NOT have appropriate Admin Rights."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113022' || ctx._temp_.cisco.message_id == '113023'"
+      field: "message"
+      pattern: "AAA Marking %{network.transport} server %{host.ip} in server group %{} as ACTIVE"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113024'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} : Authenticating %{} connection from %{source.address} with username, %{source.user.name}, from client certificate"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113025'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} : %{} Could not authenticate %{} connection from %{source.address}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113029'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} Session could not be established: session limit of %{} reached"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113030'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} User ACL %{} from AAA doesn't exist on the device, terminating connection."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113031'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} AnyConnect vpn-filter %{} is an IPv6 ACL; ACL not applied."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113032'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} AnyConnect ipv6-vpn-filter %{} is an IPv4 ACL; ACL not applied."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113033'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} AnyConnect session not allowed. ACL parse error."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113034'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} User ACL %{} from AAA ignored, AV-PAIR ACL used instead."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113035'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} Session terminated: AnyConnect not enabled or invalid AnyConnect image on the ASA."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113036'"
+      field: "message"
+      pattern: "Group %{source.user.group.name} User %{source.user.name} IP %{source.address} AAA parameter %{} value invalid."
+#  - dissect:
+#      if: "ctx._temp_.cisco.message_id == '113040'"
+#      field: "message"
+#      pattern: "Terminating the VPN connection attempt from %{}. Reason: This connection is group locked to %{}."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113041'"
+      field: "message"
+      pattern: "Redirect ACL configured for %{source.address} does not exist on the device."
