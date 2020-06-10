@@ -8,19 +8,45 @@ processors:
       if: "ctx._temp_.cisco.message_id.startsWith('302')"
       field: event.action
       value: flow-expiration
-
+  # TCP/UDP Built Messages
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302013' || ctx._temp_.cisco.message_id == '302015'"
       field: "message"
-      pattern: "Built %{network.direction} %{network.transport} %{_temp_.cisco.connection_id} for %{_temp_.cisco.source_interface}:%{source.ip}/%{source.port} (%{source.nat.ip}/%{source.nat.port}) to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} (%{destination.nat.ip}/%{destination.nat.port})"
+      pattern: "Built %{network.direction} %{network.transport} connection %{_temp_.cisco.connection_id} for %{_temp_.cisco.source_interface}:%{source.ip}/%{source.port} (%{source.nat.ip}/%{source.nat.port}) to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} (%{destination.nat.ip}/%{destination.nat.port})"
+  # TCP/UDP Teardown messages
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302014' || ctx._temp_.cisco.message_id == '302016'"
       field: "message"
-      pattern: "Teardown %{network.transport} %{_temp_.cisco.connection_id} for %{_temp_.cisco.source_interface}:%{source.ip}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} duration %{_temp_.duration_hms} bytes %{network.bytes} %{}"
+      pattern: "Teardown %{network.transport} connection %{_temp_.cisco.connection_id} for %{_temp_.cisco.source_interface}:%{source.ip}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} duration %{_temp_.duration_hms} bytes %{network.bytes} %{}"
+  # GRE Messages
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302017'"
       field: "message"
-      pattern: "Built %{network.direction} %{network.transport} %{_temp_.cisco.connection_id} from %{_temp_.cisco.source_interface}:%{source.address} (%{source.nat.ip}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{} (%{destination.nat.ip}/%{})"
+      pattern: "Built %{network.direction} %{network.transport} connection %{_temp_.cisco.connection_id} from %{_temp_.cisco.source_interface}:%{source.address} (%{source.nat.ip}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{} (%{destination.nat.ip}/%{})"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302018'"
+      field: "message"
+      pattern: "Teardown %{network.transport} connection %{_temp_.cisco.connection_id} from %{_temp_.cisco.source_interface}:%{source.address} (%{source.nat.ip}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{} (%{destination.nat.ip}/%{})"
+  # ICMP Messages
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302020'"
+      field: "message"
+      pattern: "Built %{network.direction} %{network.transport} connection for faddr %{destination.address}/%{} gaddr %{source.nat.ip}/%{} laddr %{source.ip}/%{} type %{} code %{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302021'"
+      field: "message"
+      pattern: "Teardown %{network.transport} connection for faddr %{destination.address}/%{} gaddr %{source.nat.ip}/%{} laddr %{source.ip}/%{} type %{} code %{}"
+  # TCP/UDP Built Stub Messages
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302022' || ctx._temp_.cisco.message_id == '302024'"
+      field: "message"
+      pattern: "Built %{} stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address} (%{source.nat.ip}/%{source.nat.port}) to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} (%{destination.nat.ip}/%{destination.nat.port})"
+  # TCP/UDP Teardown Stub Messages
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302023' || ctx._temp_.cisco.message_id == '302025''"
+      field: "message"
+      pattern: "Teardown stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.ip}/%{destination.port} duration %{_temp_.duration_hms} forwarded bytes %{network.bytes} %{}"
+
   - dissect:
       if: "ctx._temp_.cisco.message_id == '304001'"
       field: "message"
