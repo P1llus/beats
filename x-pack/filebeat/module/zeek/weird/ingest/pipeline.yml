@@ -3,6 +3,7 @@ processors:
 - set:
     field: event.created
     value: '{{_ingest.timestamp}}'
+    ignore_empty_value: true
 - date:
     field: zeek.weird.ts
     formats:

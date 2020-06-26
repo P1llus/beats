@@ -3,6 +3,7 @@ processors:
 - set:
     field: event.created
     value: '{{_ingest.timestamp}}'
+    ignore_empty_value: true
 - date:
     field: zeek.smb_files.ts
     formats:
@@ -30,7 +31,7 @@ processors:
 - set:
     field: file.accessed
     value: "{{zeek.smb_files.times.accessed}}"
-    if: "ctx?.zeek?.smb_files?.times?.accessed != null"
+    ignore_empty_value: true
 - date:
     field: zeek.smb_files.times.changed
     target_field: zeek.smb_files.times.changed
@@ -40,7 +41,7 @@ processors:
 - set:
     field: file.ctime
     value: "{{zeek.smb_files.times.changed}}"
-    if: "ctx?.zeek?.smb_files?.times?.changed != null"
+    ignore_empty_value: true
 - date:
     field: zeek.smb_files.times.created
     target_field: zeek.smb_files.times.created
@@ -50,7 +51,7 @@ processors:
 - set:
     field: file.created
     value: "{{zeek.smb_files.times.created}}"
-    if: "ctx?.zeek?.smb_files?.times?.created != null"
+    ignore_empty_value: true
 - date:
     field: zeek.smb_files.times.modified
     target_field: zeek.smb_files.times.modified
@@ -60,7 +61,7 @@ processors:
 - set:
     field: file.mtime
     value: "{{zeek.smb_files.times.modified}}"
-    if: "ctx?.zeek?.smb_files?.times?.modified != null"
+    ignore_empty_value: true
 - geoip:
     field: destination.ip
     target_field: destination.geo
@@ -116,7 +117,7 @@ processors:
 - set:
     field: file.path
     value: "{{zeek.smb_files.path}}\\{{zeek.smb_files.name}}"
-    if: "ctx?.zeek?.smb_files?.path != null && ctx?.zeek?.smb_files?.name != null"
+    ignore_empty_value: true
 - append:
     field: event.type
     value: deletion

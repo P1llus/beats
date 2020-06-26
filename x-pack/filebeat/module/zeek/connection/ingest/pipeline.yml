@@ -12,7 +12,7 @@ processors:
 - set:
     field: event.id
     value: '{{zeek.session_id}}'
-    if: ctx.zeek.session_id != null
+    ignore_empty_value: true
 - script:
     source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
     params:
@@ -30,12 +30,14 @@ processors:
 - set:
     field: source.ip
     value: '{{source.address}}'
+    ignore_empty_value: true
 - append:
     field: related.ip
     value: '{{source.address}}'
 - set:
     field: destination.ip
     value: '{{destination.address}}'
+    ignore_empty_value: true
 - append:
     field: related.ip
     value: '{{destination.address}}'

@@ -3,6 +3,7 @@ processors:
 - set:
     field: event.created
     value: '{{_ingest.timestamp}}'
+    ignore_empty_value: true
 - date:
     field: zeek.dnp3.ts
     formats:
@@ -12,11 +13,11 @@ processors:
 - set:
     field: event.action
     value: '{{zeek.dnp3.function.request}}'
-    if: "ctx?.zeek?.dnp3?.function?.request != null"
+    ignore_empty_value: true
 - set:
     field: event.action
     value: '{{zeek.dnp3.function.reply}}'
-    if: "ctx?.zeek?.dnp3?.function?.reply != null"
+    ignore_empty_value: true
 - lowercase:
     field: event.action
     ignore_missing: true

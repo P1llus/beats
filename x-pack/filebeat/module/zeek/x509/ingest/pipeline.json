@@ -4,7 +4,8 @@
     {
       "set": {
         "field": "event.created",
-        "value": "{{_ingest.timestamp}}"
+        "value": "{{_ingest.timestamp}}",
+        "ignore_empty_value": true
       }
     },
     {
@@ -22,7 +23,7 @@
       "set": {
         "field": "event.id",
         "value": "{{zeek.session_id}}",
-        "if": "ctx.zeek.session_id != null"
+        "ignore_empty_value": true
       }
     },
     {
