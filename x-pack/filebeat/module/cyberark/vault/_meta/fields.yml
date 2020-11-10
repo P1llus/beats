@@ -1,0 +1,27 @@
+- name: vault
+  overwrite: true
+  type: group
+  default_field: false
+  fields:
+  - name: msg
+    overwrite: true
+    type: keyword
+    description: This key is used to capture the raw message that comes into the
+      Log Decoder
+  - name: messageid
+    overwrite: true
+    type: keyword
+  - name: event_desc
+    overwrite: true
+    type: keyword
+  - name: message
+    overwrite: true
+    type: keyword
+    description: This key captures the contents of instant messages
+  - name: time
+    overwrite: true
+    type: date
+    description: This is the time at which a session hits a NetWitness Decoder.
+      This key should never be used to parse Meta data from a session (Logs/Packets)
+      Directly, this is a Reserved key in NetWitness.
+  
