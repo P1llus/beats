@@ -1,0 +1,237 @@
+description: Pipeline for parsing MISP Threat Intel
+processors:
+####################
+# Event ECS fields #
+####################
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: event.kind
+    value: alert
+- set:
+    field: event.category
+    value: malware
+- set:
+    field: event.type
+    value: info
+######################
+# General ECS fields #
+######################
+- rename:
+    field: json
+    target_field: paloalto.xdr
+    ignore_missing: true
+- date:
+    field: paloalto.xdr.events.event_timestamp
+    formats:
+      - UNIX_MS
+    if: ctx.paloalto?.xdr?.events?.event_timestamp != null
+- date:
+    field: paloalto.xdr.detection_timestamp
+    target_field: event.created
+    formats:
+      - UNIX_MS
+    if: ctx.paloalto?.xdr?.detection_timestamp != null
+- remove:
+    field: 
+      - message
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.name
+    target_field: message
+    ignore_missing: true
+####################
+# Event ECS fields #
+####################
+- set: 
+    field: event.severity
+    value: 0
+    if: ctx.paloalto?.xdr?.severity == "unknown"
+- set: 
+    field: event.severity
+    value: 1
+    if: ctx.paloalto?.xdr?.severity == "informational"
+- set: 
+    field: event.severity
+    value: 2
+    if: ctx.paloalto?.xdr?.severity == "low"
+- set: 
+    field: event.severity
+    value: 3
+    if: ctx.paloalto?.xdr?.severity == "medium"
+- set: 
+    field: event.severity
+    value: 4
+    if: ctx.paloalto?.xdr?.severity == "high"
+- rename:
+    field: paloalto.xdr.action
+    target_field: event.action
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.description
+    target_field: event.reason
+    ignore_missing: true
+###################
+# Host ECS fields #
+###################
+- rename:
+    field: paloalto.xdr.agent_device_domain
+    target_field: host.domain
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.agent_fqdn
+    target_field: host.hostname
+    ignore_missing: true
+- set:
+    field: host.name
+    copy_from: host.hostname
+    if: ctx.host?.hostname != null
+- rename:
+    field: paloalto.xdr.agent_os_sub_type
+    target_field: host.os.version
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.mac_addresses
+    target_field: host.mac
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.host_ip
+    target_field: host.ip
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.endpoint_id
+    target_field: host.id
+    ignore_missing: true
+- split:
+    field: paloalto.xdr.mac
+    target_field: host.mac
+    separator: ","
+    ignore_missing: true
+    if: ctx.host?.mac == null
+- remove:
+    field: 
+      - paloalto.xdr.mac
+    ignore_missing: true
+    if: ctx.host?.mac != null
+###################
+# File ECS fields #
+###################
+- rename:
+    field: paloalto.xdr.event.action_file_path
+    target_field: file.path
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_file_name
+    target_field: file.name
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_file_md5
+    target_field: file.hash.md5
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_file_sha256
+    target_field: file.hash.sha256
+    ignore_missing: true
+#######################
+# Registry ECS fields #
+#######################
+- rename:
+    field: paloalto.xdr.event.action_registry_key_name
+    target_field: registry.key
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_registry_value_name
+    target_field: registry.value
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_registry_full_key
+    target_field: registry.path
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.action_registry_data
+    target_field: registry.data.strings
+    ignore_missing: true
+######################
+# Process ECS fields #
+######################
+- rename:
+    field: paloalto.xdr.event.actor_process_os_pid
+    target_field: process.pid
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_instance_id
+    target_field: process.entity_id
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_image_path
+    target_field: process.executable
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_command_line
+    target_field: process.command_line
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_image_name
+    target_field: process.command_line
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_signature_vendor
+    target_field: process.code_signature.subject_name
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_image_sha256
+    target_field: process.hash.sha256
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_process_image_md5
+    target_field: process.hash.md5
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.actor_thread_thread_id
+    target_field: process.thread.id
+    ignore_missing: true
+###################
+# User ECS fields #
+###################
+- rename:
+    field: paloalto.xdr.event.user_name
+    target_field: user.name
+    ignore_missing: true
+###################
+# Rule ECS fields #
+###################
+- rename:
+    field: paloalto.xdr.event.fw_rule
+    target_field: rule.name
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.fw_rule_id
+    target_field: rule.id
+    ignore_missing: true
+#######################
+# Observer ECS fields #
+#######################
+- rename:
+    field: paloalto.xdr.event.fw_interface_from
+    target_field: observer.ingress.interface.name
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.fw_interface_to
+    target_field: observer.egress.interface.name
+    ignore_missing: true
+- rename:
+    field: paloalto.xdr.event.serial_number
+    target_field: observer.serial_number
+    ignore_missing: true
+- remove:
+    field: 
+      - paloalto.xdr.host_name
+      - paloalto.xdr.detection_timestamp
+      - paloalto.xdr.events.event_timestamp
+      - paloalto.xdr.severity
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

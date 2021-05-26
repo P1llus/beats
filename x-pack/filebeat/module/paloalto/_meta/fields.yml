@@ -1,0 +1,5 @@
+- key: paloalto
+  title: paloalto
+  description: >
+    Some paloalto module
+  fields:

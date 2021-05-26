@@ -47,6 +47,7 @@ import (
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/o365"
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/okta"
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/oracle"
+	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/paloalto"
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/panw"
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/proofpoint"
 	_ "github.com/elastic/beats/v7/x-pack/filebeat/module/rabbitmq"

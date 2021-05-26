@@ -1,0 +1,26 @@
+# Module: paloalto
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/master/filebeat-module-paloalto.html
+
+- module: paloalto
+  xdr:
+    enabled: true
+
+    # Input used for ingesting threat intel data.
+    var.input: httpjson
+
+    # The URL used for Threat Intel API calls.
+    var.url: https://APIURL/public_api/v1/alerts/get_alerts_multi_events/
+
+    #The API token for the Palo Alto XDR API.
+    var.api_token: API_KEY
+
+    # The AuthID related to the API Token, this is a required field, and must match the API token to work.
+    var.xdr_auth_id: AUTH_ID
+
+    # The interval to poll the API for updates.
+    var.interval: 5m
+
+    # NOT IMPLEMENTED YET
+    # How far back to look once the beat starts up for the first time, the value has to be in hours. Each request afterwards will filter on any event newer
+    # than the last event that was already ingested.
+    # var.first_interval: 300h

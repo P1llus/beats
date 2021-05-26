@@ -1,0 +1,21 @@
+module_version: 1.0
+
+var:
+  - name: input
+    default: httpjson
+  - name: interval
+    default: 5m
+  - name: first_interval
+    default: 300h
+  - name: api_token
+  - name: xdr_auth_id
+  - name: ssl
+  - name: url
+    default: "https://APIURL/public_api/v1/alerts/get_alerts_multi_events/"
+  - name: tags
+    default: [paloalto-xdr, forwarded]
+  - name: proxy_url
+
+ingest_pipeline:
+  - ingest/pipeline.yml
+input: config/config.yml
