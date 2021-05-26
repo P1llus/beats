@@ -23,7 +23,7 @@ processors:
     target_field: paloalto.xdr
     ignore_missing: true
 - date:
-    field: paloalto.xdr.events.event_timestamp
+    field: paloalto.xdr.eventss.event_timestamp
     formats:
       - UNIX_MS
     if: ctx.paloalto?.xdr?.events?.event_timestamp != null
@@ -118,110 +118,110 @@ processors:
 # File ECS fields #
 ###################
 - rename:
-    field: paloalto.xdr.event.action_file_path
+    field: paloalto.xdr.events.action_file_path
     target_field: file.path
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_file_name
+    field: paloalto.xdr.events.action_file_name
     target_field: file.name
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_file_md5
+    field: paloalto.xdr.events.action_file_md5
     target_field: file.hash.md5
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_file_sha256
+    field: paloalto.xdr.events.action_file_sha256
     target_field: file.hash.sha256
     ignore_missing: true
 #######################
 # Registry ECS fields #
 #######################
 - rename:
-    field: paloalto.xdr.event.action_registry_key_name
+    field: paloalto.xdr.events.action_registry_key_name
     target_field: registry.key
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_registry_value_name
+    field: paloalto.xdr.events.action_registry_value_name
     target_field: registry.value
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_registry_full_key
+    field: paloalto.xdr.events.action_registry_full_key
     target_field: registry.path
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.action_registry_data
+    field: paloalto.xdr.events.action_registry_data
     target_field: registry.data.strings
     ignore_missing: true
 ######################
 # Process ECS fields #
 ######################
 - rename:
-    field: paloalto.xdr.event.actor_process_os_pid
+    field: paloalto.xdr.events.actor_process_os_pid
     target_field: process.pid
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_instance_id
+    field: paloalto.xdr.events.actor_process_instance_id
     target_field: process.entity_id
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_image_path
+    field: paloalto.xdr.events.actor_process_image_path
     target_field: process.executable
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_command_line
+    field: paloalto.xdr.events.actor_process_command_line
     target_field: process.command_line
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_image_name
+    field: paloalto.xdr.events.actor_process_image_name
     target_field: process.command_line
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_signature_vendor
+    field: paloalto.xdr.events.actor_process_signature_vendor
     target_field: process.code_signature.subject_name
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_image_sha256
+    field: paloalto.xdr.events.actor_process_image_sha256
     target_field: process.hash.sha256
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_process_image_md5
+    field: paloalto.xdr.events.actor_process_image_md5
     target_field: process.hash.md5
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.actor_thread_thread_id
+    field: paloalto.xdr.events.actor_thread_thread_id
     target_field: process.thread.id
     ignore_missing: true
 ###################
 # User ECS fields #
 ###################
 - rename:
-    field: paloalto.xdr.event.user_name
+    field: paloalto.xdr.events.user_name
     target_field: user.name
     ignore_missing: true
 ###################
 # Rule ECS fields #
 ###################
 - rename:
-    field: paloalto.xdr.event.fw_rule
+    field: paloalto.xdr.events.fw_rule
     target_field: rule.name
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.fw_rule_id
+    field: paloalto.xdr.events.fw_rule_id
     target_field: rule.id
     ignore_missing: true
 #######################
 # Observer ECS fields #
 #######################
 - rename:
-    field: paloalto.xdr.event.fw_interface_from
+    field: paloalto.xdr.events.fw_interface_from
     target_field: observer.ingress.interface.name
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.fw_interface_to
+    field: paloalto.xdr.events.fw_interface_to
     target_field: observer.egress.interface.name
     ignore_missing: true
 - rename:
-    field: paloalto.xdr.event.serial_number
+    field: paloalto.xdr.events.serial_number
     target_field: observer.serial_number
     ignore_missing: true
 - remove:
